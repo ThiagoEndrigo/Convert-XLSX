@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipulação de Planilhas Excel</title>
+</head>
+<body>
+
+    <input type="file" onchange="handleFiles(event)" multiple>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script>
+        function handleFiles(event) {
+            const files = event.target.files;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheet = workbook.Sheets[sheetName];
+
+                        // Obter o nome da tabela (nome da aba da planilha)
+                        const tableName = sheetName.replace(/\s+/g, '_'); // Remover espaços e substituir por underscores
+
+                        // Converter a planilha para um objeto JSON
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                        // Obter os nomes das colunas da planilha (cabeçalhos)
+                        const columns = jsonData[0];
+
+                        // Criar uma string de instrução SQL de INSERT
+                        const insertSQL = jsonData.slice(1).map(row => {
+                            const values = row.map(value => {
+                                if (value === '' || typeof value === 'undefined') {
+                                    return 'NULL'; // Substituir por NULL se o valor for uma string vazia ou indefinido
+                                } else {
+                                    return typeof value === 'string' ? `'${value}'` : value;
+                                }
+                            }).join(', ');
+                            return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
+                        }).join('\n');
+
+                        // Criar um blob com o texto do SQL
+                        const blob = new Blob([insertSQL], { type: 'text/plain' });
+
+                        // Criar um link de download e atribuí-lo ao documento
+                        const link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = `${tableName}.sql`;
+                        link.click();
+                    });
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+        }
+    </script>
+</body>
+</html>
