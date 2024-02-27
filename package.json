@@ -1,0 +1,23 @@
+{
+    "name": "manipulacao-planilhas-excel",
+    "version": "1.0.0",
+    "description": "Um exemplo de manipulação de planilhas Excel com a biblioteca xlsx.",
+    "main": "index.js",
+    "scripts": {
+      "start": "live-server"
+    },
+    "keywords": [
+      "excel",
+      "planilha",
+      "manipulação"
+    ],
+    "author": "Seu Nome",
+    "license": "MIT",
+    "dependencies": {
+      "xlsx": "^0.17.4"
+    },
+    "devDependencies": {
+      "live-server": "^1.2.1"
+    }
+  }
+  
